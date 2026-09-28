@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23000' stroke-width='2.5'/%3E%3Ctext x='16' y='23' font-size='18' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='%23000'%3E%3F%3C/text%3E%3C/svg%3E">
+<title>确定要注销地球online账号？</title>
+<meta name="description" content="一个关于地球online的注销确认弹窗。">
+<style>
+  :root{
+    --ink:#000;
+    --ink-2:#555;
+    --ink-3:#999;
+    --no:#1a9c3c;
+    --yes:#e02020;
+    --line:#e6e6e6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:#fff;
+    color:var(--ink);
+    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+    overflow:hidden;
+  }
+
+  /* ---------- 弹窗 ---------- */
+  .dialog{
+    width:100%;max-width:520px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:0 18px 50px rgba(0,0,0,.10),0 2px 8px rgba(0,0,0,.05);
+    padding:44px 36px 32px;
+    text-align:center;
+    animation:pop .32s cubic-bezier(.2,0,0,1);
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+
+  .icon{
+    width:52px;height:52px;margin:0 auto 22px;
+    border-radius:50%;
+    border:2px solid var(--ink);
+    display:grid;place-items:center;
+    font-size:28px;line-height:1;font-weight:700;
+  }
+  .icon::before{content:"?"}
+
+  .title{
+    font-size:23px;font-weight:600;line-height:1.55;
+    letter-spacing:.2px;
+    margin-bottom:8px;
+  }
+  .sub{
+    font-size:13.5px;color:var(--ink-3);line-height:1.7;
+    min-height:20px;
+    margin-bottom:30px;
+  }
+
+  .actions{
+    display:flex;gap:14px;justify-content:center;
+  }
+  .actions button{
+    flex:1;max-width:170px;
+    padding:15px 0;
+    border:none;border-radius:10px;
+    font-family:inherit;font-size:20px;font-weight:600;
+    color:#fff;cursor:pointer;
+    transition:transform .14s ease,filter .14s ease,box-shadow .14s ease;
+  }
+  .actions button:active{transform:scale(.96)}
+  .btn-no{background:var(--no)}
+  .btn-no:hover{filter:brightness(1.08);box-shadow:0 6px 18px rgba(26,156,60,.28)}
+  .btn-yes{background:var(--yes)}
+  .btn-yes:hover{filter:brightness(1.08);box-shadow:0 6px 18px rgba(224,32,32,.28)}
+
+  .hint{
+    margin-top:24px;font-size:11.5px;color:var(--ink-3);
+    letter-spacing:.3px;
+  }
+  kbd{
+    font-family:inherit;font-size:11px;
+    border:1px solid var(--line);border-bottom-width:2px;
+    border-radius:4px;padding:1px 5px;color:var(--ink-2);
+  }
+
+  /* ---------- 结果页 ---------- */
+  .result{
+    width:100%;max-width:520px;
+    text-align:center;
+    animation:fade .5s ease both;
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .result h1{
+    font-size:27px;font-weight:600;line-height:1.5;margin-bottom:10px;
+  }
+  .result p{
+    font-size:14.5px;color:var(--ink-2);line-height:1.85;margin-bottom:6px;
+  }
+  .result .big{
+    font-size:15px;color:var(--ink);font-weight:500;
+  }
+
+  .card{
+    margin-top:26px;
+    border:1px solid var(--line);border-radius:12px;
+    padding:20px 22px;text-align:left;
+    background:#fafafa;
+  }
+  .card .row{
+    display:flex;justify-content:space-between;gap:14px;
+    padding:9px 0;font-size:13.5px;
+    border-bottom:1px dashed var(--line);
+  }
+  .card .row:last-child{border-bottom:none}
+  .card .k{color:var(--ink-3);flex:none}
+  .card .v{color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+  .card .v em{font-style:normal;color:var(--no);font-weight:600}
+
+  .again{
+    margin-top:28px;
+    background:none;border:1px solid var(--line);
+    border-radius:9px;padding:11px 26px;
+    font-family:inherit;font-size:14px;color:var(--ink-2);
+    cursor:pointer;transition:all .16s ease;
+  }
+  .again:hover{border-color:var(--ink-3);color:var(--ink)}
+
+  /* ---------- 终局：黑屏 ---------- */
+  .void{
+    position:fixed;inset:0;background:#000;
+    display:flex;align-items:center;justify-content:center;
+    flex-direction:column;gap:18px;
+    color:#fff;text-align:center;padding:24px;
+    opacity:0;pointer-events:none;
+    transition:opacity 1.1s ease;
+    z-index:20;
+  }
+  .void.on{opacity:1;pointer-events:auto}
+  .void .w{font-size:17px;letter-spacing:3px;opacity:.9}
+  .void .s{font-size:12.5px;color:#888;letter-spacing:1px}
+  .void .back{
+    margin-top:26px;background:none;border:1px solid #333;color:#bbb;
+    border-radius:8px;padding:10px 24px;font-family:inherit;font-size:13px;
+    cursor:pointer;transition:all .2s ease;
+  }
+  .void .back:hover{border-color:#666;color:#fff}
+
+  /* ---------- 移动端 ---------- */
+  @media (max-width:480px){
+    .dialog{padding:36px 22px 26px;border-radius:12px}
+    .title{font-size:20px}
+    .actions{gap:11px}
+    .actions button{font-size:18px;padding:14px 0}
+    .result h1{font-size:23px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<!-- 主弹窗 -->
+<div class="dialog" id="dlg">
+  <div class="icon" id="ic"></div>
+  <p class="title" id="title">确定要注销地球online账号？</p>
+  <p class="sub" id="sub">注销后，你的全部存档将被清空。</p>
+  <div class="actions">
+    <button class="btn-no" id="no">否</button>
+    <button class="btn-yes" id="yes">是</button>
+  </div>
+  <p class="hint">按 <kbd>Esc</kbd> 相当于选择「否」</p>
+</div>
+
+<!-- 结果页 -->
+<div class="result" id="res" hidden></div>
+
+<!-- 终局黑屏 -->
+<div class="void" id="void">
+  <div class="w" id="voidW">账号已注销</div>
+  <div class="s" id="voidS">正在释放资源…</div>
+  <button class="back" id="voidBack">重新注册</button>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var $ = function(id){ return document.getElementById(id); };
+  var dlg = $('dlg'), res = $('res'), vd = $('void');
+
+  /* 点「是」之后的连环确认，一层比一层离谱 */
+  var chain = [
+    { t:'确定要注销地球online账号？', s:'注销后，你的全部存档将被清空。' },
+    { t:'真的确定吗？',               s:'此操作不可撤销。你确定？' },
+    { t:'最后一次确认。真的要注销吗？', s:'你攒下的回忆、关系、没说完的话，都会一起消失。' },
+    { t:'系统检测到你在笑。',          s:'仍要继续注销吗？' },
+    { t:'那……真的再见了？',           s:'这是最后一个「是」了。' }
+  ];
+  var step = 0;
+
+  function showDialog(i){
+    step = i;
+    $('title').textContent = chain[i].t;
+    $('sub').textContent   = chain[i].s;
+    // 重新播放一次弹入动画，让每一步都有"新弹窗"的感觉
+    dlg.style.animation = 'none';
+    void dlg.offsetWidth;
+    dlg.style.animation = '';
+  }
+
+  /* ---------- 点「是」 ---------- */
+  $('yes').addEventListener('click', function(){
+    if (step < chain.length - 1){
+      showDialog(step + 1);
+    } else {
+      finish();
+    }
+  });
+
+  function finish(){
+    dlg.hidden = true;
+    vd.classList.add('on');
+    $('voidS').textContent = '正在释放资源…';
+
+    // 依次播报，营造"正在注销"的仪式感
+    var lines = [
+      '正在释放资源…',
+      '正在回收 37.2 万亿个细胞…',
+      '正在解除 全部社交绑定…',
+      '正在清理 未完成的心愿…',
+      '注销完成。'
+    ];
+    var i = 0;
+    var timer = setInterval(function(){
+      i++;
+      if (i < lines.length){
+        $('voidS').textContent = lines[i];
+      } else {
+        clearInterval(timer);
+        $('voidW').textContent = '开玩笑的。';
+        $('voidS').textContent = '地球online 不支持注销。你还得继续玩。';
+        $('voidBack').textContent = '回到地球';
+      }
+    }, 900);
+  }
+
+  $('voidBack').addEventListener('click', function(){
+    vd.classList.remove('on');
+    setTimeout(function(){ location.reload(); }, 500);
+  });
+
+  /* ---------- 点「否」 ---------- */
+  $('no').addEventListener('click', cancel);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && !dlg.hidden) cancel();
+  });
+
+  function cancel(){
+    dlg.hidden = true;
+    res.hidden = false;
+
+    var now = new Date();
+    var pad = function(n){ return n < 10 ? '0' + n : '' + n; };
+    var date = now.getFullYear() + ' 年 ' + (now.getMonth()+1) + ' 月 ' + now.getDate() + ' 日';
+    var time = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+
+    res.innerHTML =
+      '<h1>已取消注销</h1>' +
+      '<p>欢迎回到 <span class="big">地球online</span>。</p>' +
+      '<p>你的账号状态正常，存档完好。</p>' +
+      '<div class="card">' +
+        row('服务器', 'Earth · 亚洲节点') +
+        row('运行状态', '<em>正常</em>') +
+        row('当前时间', date + ' ' + time) +
+        row('本次在线', '<span id="dur">0.0</span> 秒') +
+        row('可注销', '<em>否</em>') +
+      '</div>' +
+      '<button class="again" id="back">再考虑一次</button>';
+
+    $('back').addEventListener('click', function(){ location.reload(); });
+
+    // 在线时长实时跳动
+    var t0 = Date.now();
+    var el = $('dur');
+    setInterval(function(){
+      el.textContent = ((Date.now() - t0) / 1000).toFixed(1);
+    }, 100);
+  }
+
+  function row(k, v){
+    return '<div class="row"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>';
+  }
+})();
+</script>
+</body>
+</html>
